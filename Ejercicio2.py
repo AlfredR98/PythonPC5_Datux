@@ -14,7 +14,6 @@ df = pd.read_csv(path,sep=';')
 CASO 1
 '''
 with sqlite3.connect(DB) as conn:
-    #df = pd.read_sql_query(f'select * from {TABLE_NAME}', conn)
    pass
     
 
@@ -63,38 +62,30 @@ if not os.path.isdir('./reportes'):
 filtro_df = df[df['Country'].isin(listado_paises)]
 filtro_df = filtro_df[(filtro_df['CodeChallengeScore'] >= 7) & (filtro_df['TechnicalInterviewScore'] >= 7)]
 print(filtro_df.head(3))
-#print(type(prueba))
+
 
 for country in listado_paises:
-  # creo subcarpetas
+
   if not os.path.isdir(f'./reportes/images/{country}'):
     os.mkdir(f'./reportes/images/{country}')
 
-  # filtro df
   countryDf = filtro_df[filtro_df['Country']==country]
 
-  # genero gráficos
   genero_grafico_circular(countryDf, country)
   genero_grafico_barras(countryDf, country)
 
-  #Genero reporte Excel por pais
   with pd.ExcelWriter(f"./reportes/{country}.xlsx", engine= "xlsxwriter") as excelBook:
 
     sheet_name = f"Report-{country}"
     countryDf.to_excel(excelBook, index=False, sheet_name= sheet_name)
 
-    # posiciono sobre hoja de excel
     excel_sheet = excelBook.sheets[sheet_name]
 
-    # almaceno imagen
     image_pie_path = f"./reportes/images/{country}/pie_chart.png"
     image_bar_path = f"./reportes/images/{country}/bar_chart.png"
 
-    excel_sheet.insert_image(1, countryDf.shape[1]+2, image_pie_path) # 1 y df.shape +2 -> establecen posicion de imagen en libro
+    excel_sheet.insert_image(1, countryDf.shape[1]+2, image_pie_path)
     excel_sheet.insert_image(countryDf.shape[0]+2, countryDf.shape[1]+2, image_bar_path)
-
-    # Guardo cambios sobre excel
-    #excelBook.close()
 
     print(f'Se generó reporte para el país {country}')
     pass
@@ -110,17 +101,15 @@ from email.mime.application import MIMEApplication
 import os 
 
 
-smtp_server = 'smtp.gmail.com'  # Cambia esto al servidor SMTP que estés utilizando
-smtp_port = 587  # Cambia esto al puerto adecuado
+smtp_server = 'smtp.gmail.com'
+smtp_port = 587
 sender_email = 'tu_correo@gmail.com'
 sender_password = 'tu_contraseña'
 
-# Detalles del correo electrónico
 receiver_email = 'alfredoraico3@gmail.com'
 subject = 'Envio Reporte de Candidates'
 body = 'Buenas tades,\nSe adjunta el documento en base a lo solicitado.'
 
-# Crear el objeto MIMEMultipart
 msg = MIMEMultipart()
 msg['From'] = sender_email
 msg['To'] = receiver_email
@@ -128,27 +117,23 @@ msg['Subject'] = subject
 msg.attach(MIMEText(body, 'plain'))
 
 
-# Adjuntar archivo
-file_path = './reportes/Ecuador.xlsx'  # Cambia la ruta al archivo que quieras adjuntar
+
+file_path = './reportes/Ecuador.xlsx'
 with open(file_path, 'rb') as file:
     attachment = MIMEApplication(file.read(), _subtype="xlsx")
     attachment.add_header('Content-Disposition', 'attachment', filename=file_path)
     msg.attach(attachment)
-    
-# Iniciar la conexión con el servidor SMTP
+
 with smtplib.SMTP(smtp_server, smtp_port) as server:
-    server.starttls()  # Iniciar el modo seguro
+    server.starttls() 
     server.login(sender_email, sender_password)
     server.sendmail(sender_email, receiver_email, msg.as_string())
 
 print('Correo enviado exitosamente')
 
 
-
 def func_sender_email(**args):
   return NotImplementedError
-
-# me posiciono sobre carpeta
 os.chdir('reportes')
 
 func_sender_email(
@@ -158,8 +143,3 @@ func_sender_email(
   subject='Reporte Brazil',
   message='Reporte excel Brazil',
   archivo_adjunto='Brazil.xlsx')
-
-
-
-
-
